@@ -19,7 +19,6 @@
 #endif
 
 uint64_t* palerain_flags_p = &palerain_flags;
-static bool force_use_verbose_boot = false;
 char* gOverrideLibcheckra1nHelper = NULL;
 
 static struct option longopts[] = {
@@ -78,7 +77,7 @@ static int usage(int e, char* prog_name)
 #endif
 			"] [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file] [-i checkra1n file]\n"
 			"Copyright (C) 2024, palera1n team, All Rights Reserved.\n\n"
-			"iOS/iPadOS/tvOS 15.0-18.1, bridgeOS 5.0-9.1 arm64 jailbreaking tool\n\n"
+			"iOS/iPadOS/tvOS 15.0-18.3, bridgeOS 5.0-9.3 arm64 jailbreaking tool\n\n"
 			"\t--version\t\t\t\tPrint version\n"
 			"\t--force-revert\t\t\t\tRemove jailbreak\n"
 #ifdef DEV_BUILD
@@ -148,11 +147,9 @@ int optparse(int argc, char* argv[]) {
 		case 'B':
 			palerain_flags |= palerain_option_setup_partial_root;
 			palerain_flags |= palerain_option_setup_rootful;
-			palerain_flags |= palerain_option_verbose_boot;
 			break;
 		case 'c':
 			palerain_flags |= palerain_option_setup_rootful;
-			palerain_flags |= palerain_option_verbose_boot;
 			break;
 		case 'C':
 			palerain_flags |= palerain_option_clean_fakefs;
@@ -175,7 +172,6 @@ int optparse(int argc, char* argv[]) {
 			break;
 		case 'V':
 			palerain_flags |= palerain_option_verbose_boot;
-			force_use_verbose_boot = true;
 #ifdef TUI
 			tui_options_verbose_boot = true;
 #endif
@@ -362,10 +358,6 @@ int optparse(int argc, char* argv[]) {
 
 	if (palerain_flags & palerain_option_telnetd) {
 		LOG(LOG_WARNING, "telnetd is enabled, this is a security hole");
-	}
-
-	if ((strstr(xargs_cmd, "serial=") != NULL) && !force_use_verbose_boot && (palerain_flags & palerain_option_setup_rootful)) {
-		palerain_flags &= ~palerain_option_verbose_boot;
 	}
 
 	if ((palerain_flags & (palerain_option_tui)) && (palerain_flags & (palerain_option_cli))) {

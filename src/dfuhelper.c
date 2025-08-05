@@ -40,7 +40,7 @@
 
 int dfuhelper_thr_running = false;
 
-void step(int time, int time2, char *text, bool (*cond)(uint64_t), uint64_t cond_arg) {
+static void step(int time, int time2, char *text, bool (*cond)(uint64_t), uint64_t cond_arg) {
     for (int i = time2; i < time; i++) {
 		printf(
 			(palerain_flags & palerain_option_no_colors) 
@@ -59,7 +59,7 @@ void step(int time, int time2, char *text, bool (*cond)(uint64_t), uint64_t cond
 	if (time2 == 0) puts("");
 }
 
-int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
+static int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 	devinfo_t dev;
 	int ret;
 	ret = devinfo_cmd(&dev, usbmuxd_device->udid);
@@ -73,7 +73,24 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 		LOG(LOG_WARNING, "palera1n doesn't and never will work on A12+ (arm64e)");
 		return -1;
 	}
-	if (!strncmp(dev.productType, "iPhone10,", strlen("iPhone10,"))) {
+
+	if ((palerain_flags & palerain_option_device_info)) {
+		printf("Mode: normal\n");
+		printf("ProductType: %s\n", dev.productType);
+		printf("Architecture: %s\n", dev.CPUArchitecture);
+		printf("Version: %s\n", dev.productVersion);
+		printf("DisplayName: %s\n", dev.displayName);
+
+		device_has_booted = true;
+		set_spin(0);
+		unsubscribe_cmd();
+		return 0;
+	}
+
+	/* For Booting Linux etc */
+	if (!getenv("PALERA1N_BYPASS_PASSCODE_CHECK") &&
+		!strncmp(dev.productType, "iPhone10,", strlen("iPhone10,")
+		)) {
 		if (!(palerain_flags & palerain_option_device_info))
 			LOG(LOG_VERBOSE2, "Product %s requires passcode to be disabled", dev.productType);
 		unsigned char passcode_state = 0;
@@ -91,19 +108,10 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 			return -1;
 		}
 	}
+	
+	if (getenv("PALERA1N_BYPASS_PASSCODE_CHECK"))
+		LOG(LOG_WARNING, "Bypassed passcode check");	
 
-	if ((palerain_flags & palerain_option_device_info)) {
-		printf("Mode: normal\n");
-		printf("ProductType: %s\n", dev.productType);
-		printf("Architecture: %s\n", dev.CPUArchitecture);
-		printf("Version: %s\n", dev.productVersion);
-		printf("DisplayName: %s\n", dev.displayName);
-
-		device_has_booted = true;
-		set_spin(0);
-		unsubscribe_cmd();
-		return 0;
-	}
 	if (verbose > 1) {
 		/* (LOG_VERBOSE - 3) or below*/
 		LOG(LOG_INFO, "Telling device with udid %s to enter recovery mode immediately", usbmuxd_device->udid);
@@ -125,7 +133,7 @@ static bool conditional(uint64_t ecid) {
 	return get_ecid_wait_for_dfu() != ecid;
 }
 
-void* connected_recovery_mode(struct irecv_device_info* info) {
+static void* connected_recovery_mode(struct irecv_device_info* info) {
 	int ret;
 	uint64_t ecid;
 	uint32_t cpid, bdid;
@@ -215,7 +223,7 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 	return NULL;
 }
 
-void* connected_dfu_mode(struct irecv_device_info* info) {
+static void* connected_dfu_mode(struct irecv_device_info* info) {
 	if (get_ecid_wait_for_dfu() == info->ecid) {
 		set_ecid_wait_for_dfu(0);
 		puts("");
@@ -232,7 +240,7 @@ void* connected_dfu_mode(struct irecv_device_info* info) {
 	return NULL;
 }
 
-void device_event_cb(const usbmuxd_event_t *event, void* userdata) {
+static void device_event_cb(const usbmuxd_event_t *event, void* userdata) {
 	if (event->device.conn_type != CONNECTION_TYPE_USB) return;
 	switch (event->event) {
 	case UE_DEVICE_ADD:
@@ -257,7 +265,7 @@ void device_event_cb(const usbmuxd_event_t *event, void* userdata) {
 	}
 }
 
-void irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
+static void irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
 	pthread_t recovery_thread, dfu_thread;
 	int ret;
 	

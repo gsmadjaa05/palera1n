@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install dependencies (packages)
         run: |
@@ -72,7 +72,7 @@ jobs:
             gnu_triple: aarch64-apple-darwin
             os: iphoneos
             minos: 7.0
-    runs-on: macos-12
+    runs-on: macos-15
     env:
       MBEDTLS_VERSION: 3.5.2
       READLINE_VERSION: 8.2
@@ -84,14 +84,14 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Install dependencies (packages)
         run: |
           sudo /usr/local/bin/pip3 install jsonschema jinja2
-          brew install make autoconf automake pkg-config gnu-sed gettext
+          brew install make autoconf automake pkg-config gnu-sed gettext libtool
           sudo rm -rf /usr/local/Frameworks/Python*
           curl -LO https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_x86_64
           sudo install -m755 ldid_macosx_x86_64 /usr/local/bin/ldid
@@ -102,7 +102,7 @@ jobs:
 
       - name: Select correct Xcode
         run: |
-          sudo xcode-select -s /Applications/Xcode_14.2.app
+          sudo xcode-select -s /Applications/Xcode_16.2.app
 
       - name: Setup environment
         run: |
@@ -114,9 +114,9 @@ jobs:
           echo "CC=$(xcrun --find cc)" >> $GITHUB_ENV
           echo "CXX=$(xcrun --find c++)" >> $GITHUB_ENV
           echo "CPP=$(xcrun --find cc) -E" >> $GITHUB_ENV
-          echo "CFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Os -g -flto=full -Wl,-object_path_lto,lto.o -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64" >> $GITHUB_ENV
-          echo "CPPFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Wno-error-implicit-function-declaration -Os -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64" >> $GITHUB_ENV
-          echo "CXXFLAGS=-stdlib=libc++ -g -Os -isysroot ${{ env.SDK }} -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isystem $(pwd)/sysroot/usr/local/include -Os -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64" >> $GITHUB_ENV
+          echo "CFLAGS=-g -Os -isystem ${{ env.SDK }}/usr/include/c++/v1 -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Os -g -flto=full -Wl,-object_path_lto,lto.o -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64" >> $GITHUB_ENV
+          echo "CPPFLAGS=-g -Os -isystem ${{ env.SDK }}/usr/include/c++/v1 -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Wno-error-implicit-function-declaration -Os -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64" >> $GITHUB_ENV
+          echo "CXXFLAGS=-stdlib=libc++ -g -Os -isystem$(TARGET_SYSROOT)/usr/include/c++/v1 -isysroot ${{ env.SDK }} -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isystem $(pwd)/sysroot/usr/local/include -Os -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64" >> $GITHUB_ENV
           echo "LDFLAGS=-g -Wl,-dead_strip -arch ${{ matrix.arch }} -isysroot ${{ env.SDK }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
           echo "CFLAGS_FOR_BUILD=-arch $(uname -m) -isysroot $(xcrun -sdk macosx --show-sdk-path) -Os" >> $GITHUB_ENV
           echo "CXXFLAGS_FOR_BUILD=-stdlib=libc++ -arch $(uname -m) -isysroot $(xcrun -sdk macosx --show-sdk-path) -Os" >> $GITHUB_ENV
@@ -349,7 +349,7 @@ jobs:
 
       - name: Upload ${{ matrix.os }} thin ${{ matrix.arch }} build
         if: ${{ github.event_name != 'pull_request' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: palera1n-${{ matrix.os }}-${{ matrix.arch }}
           path: palera1n-${{ matrix.os }}-${{ matrix.arch }}
@@ -357,7 +357,7 @@ jobs:
 
       - name: Upload ${{ matrix.os }} thin ${{ matrix.arch }} build (Development)
         if: ${{ github.event_name != 'pull_request' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: palera1n-${{ matrix.os }}-${{ matrix.arch }}.development
           path: palera1n-${{ matrix.os }}-${{ matrix.arch }}.development
@@ -366,7 +366,7 @@ jobs:
 
       - name: Upload ${{ matrix.os }} thin ${{ matrix.arch }} debug symbols
         if: ${{ github.event_name != 'pull_request' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: palera1n-${{ matrix.os }}-${{ matrix.arch }}.dSYM
           path: palera1n-${{ matrix.os }}-${{ matrix.arch }}.dSYM
@@ -383,7 +383,7 @@ jobs:
     needs: build-darwin
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -395,7 +395,7 @@ jobs:
           mirror: 'https://apt.procurs.us/'
 
       - name: Download all Darwin artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: Prepare artifact
         run: |
@@ -497,7 +497,7 @@ jobs:
         run: echo "$(git describe --dirty --tags --abbrev=7 | sed 's|-dirty||')" > build-tag.txt
       
       - name: Upload build tag
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-tag
           path: build-tag.txt
@@ -542,7 +542,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -554,7 +554,7 @@ jobs:
 
       - name: Download toolchain checksum
         run: |
-          curl -LO https://musl.cc/SHA512SUMS
+          curl -u ${{ secrets.ACTIONS_RESOURCES_LOGIN }} -LO https://static.palera.in/action-resources/musl-cross/SHA512SUMS
           echo "TOOLCHAIN_CHECKSUM="$(grep ${{ matrix.triple }}-cross.tgz SHA512SUMS | cut -d' ' -f1) >> $GITHUB_ENV
 
       - name: Download toolchain (cached)
@@ -567,7 +567,7 @@ jobs:
       - name: Download toolchain
         if: steps.toolchain_cache.outputs.cache-hit != 'true'
         run: |
-          curl -LO https://musl.cc/${{ matrix.triple }}-cross.tgz
+          curl -u ${{ secrets.ACTIONS_RESOURCES_LOGIN }} -LO https://static.palera.in/action-resources/musl-cross/${{ matrix.triple }}-cross.tgz
 
       - name: Setup environment
         run: |
@@ -883,14 +883,14 @@ jobs:
     needs: [build-docs, build-darwin, darwin-dist, build-Linux]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
       - name: Get branch name
         id: branch-name
         uses: tj-actions/branch-names@v7
 
       - name: Download build tag
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-tag
 

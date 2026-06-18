@@ -78,7 +78,7 @@ static int usage(int e, char* prog_name)
 #endif
 			"] [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file] [-i checkra1n file]\n"
 			"Copyright (C) 2024, palera1n team, All Rights Reserved.\n\n"
-			"iOS/iPadOS/tvOS 15.0-26.0, bridgeOS 5.0-10.0 arm64 jailbreaking tool\n\n"
+			"iOS/iPadOS/tvOS 15-26, bridgeOS 5-10 arm64 jailbreaking tool\n\n"
 			"\t--version\t\t\t\tPrint version\n"
 			"\t--force-revert\t\t\t\tRemove jailbreak\n"
 #ifdef DEV_BUILD
@@ -122,6 +122,9 @@ static int usage(int e, char* prog_name)
 #ifdef TUI
 			"\t-t, --tui\t\t\t\tForce interactive TUI\n"
 			"\t--cli\t\t\t\t\tForce cli mode\n"
+#endif
+#if defined(__APPLE__)
+			"\t--override-libcheckra1nhelper <file>\tCustom checkra1n hook dylib\n"
 #endif
 		"\nEnvironmental variables:\n"
 		"\tTMPDIR\t\ttemporary diretory (path the built-in checkra1n will be extracted to)\n"
@@ -329,7 +332,6 @@ int optparse(int argc, char* argv[]) {
 			palerain_flags |= palerain_option_palerain_version;
 			break;
 		case palerain_option_case_libcheckra1nhelper_path:
-			printf("meow\n");
 			gOverrideLibcheckra1nHelper = calloc(1, strlen(optarg) + 1);
 			if (!gOverrideLibcheckra1nHelper) {
 				return -1;

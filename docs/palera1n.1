@@ -1,12 +1,12 @@
 .\"-
-.\" Copyright (c) 2024 Nick Chan
+.\" Copyright (c) 2026 Nick Chan
 .\" SPDX-License-Identifier: MIT
 .\"
 .Dd "23 December 2024"
 .Dt palera1n 1
 .Sh NAME
 .Nm palera1n
-.Nd arm64 iOS/iPadOS/tvOS 15.0-26.0, bridgeOS 5.0-10.0 jailbreaking tool
+.Nd arm64 iOS/iPadOS/tvOS 15-26, bridgeOS 5-10 jailbreaking tool
 .Sh SYNOPSIS
 .Nm
 .Op Fl cCdDEfhIlLnpRsSTvV
@@ -18,9 +18,10 @@
 .Op Fl i Ar checkra1n file
 .Op Fl -version
 .Op Fl -force-revert
+.Op Fl -override-libcheckra1nhelper Ar hook dylib
 .Sh DESCRIPTION
 .Nm
-jailbreaks an arm64 (arm64e excluded) iOS/iPadOS/tvOS 15.0-26.0, bridgeOS 5.0-10.0 device,
+jailbreaks an arm64 (arm64e excluded) iOS/iPadOS/tvOS 15-26, bridgeOS 5-10 device,
 utilizing the
 .Em checkm8
 bootROM exploit.
@@ -168,6 +169,10 @@ Proceed in rootful mode. Despite its name, this applies to both full, partial fa
 Prints help text.
 .It Fl i , -checkra1n-file Ar checkra1n file
 Specify the path to a custom checkra1n file.
+On Apple platforms this will disable the built-in checkra1n helper.
+A custom one may still be specified with
+.Fl -override-libcheckra1nhelper
+\[char46]
 .It Fl k , -override-pongo Ar pongo file
 Override PongoOS image. The raw image, named
 .Em Pongo.bin
@@ -222,6 +227,10 @@ Enable debug logging. The option may be repeated for extra verbosity.
 Boots the device in verbose mode, allowing boot logs to be seen.
 .It Fl I , -device-info
 Prints info about device and exits.
+.It Fl -override-libcheckra1nhelper Ar hook dylib
+(Apple platforms only) Specify a custom dylib to insert into checkra1n via
+.Em DYLD_INSERT_LIBRARIES
+\[char46]
 .El
 .Sh ENVIRONMENTAL VARIABLES
 .Bl -tag -width -indent

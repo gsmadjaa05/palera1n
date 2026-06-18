@@ -22,7 +22,7 @@ extern uint32_t binpack_dmg_len;
 extern uint8_t Pongo_bin[];
 extern uint32_t Pongo_bin_len;
 
-#if defined(__APPLE__) && (TARGET_OS_IPHONE || defined(DEV_BUILD) || defined(FORCE_HELPER))
+#if defined(__APPLE__)
 extern uint8_t libcheckra1nhelper_dylib[];
 extern uint32_t libcheckra1nhelper_dylib_len;
 #endif

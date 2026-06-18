@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <sys/ptrace.h>
 #include <inttypes.h>
 #include <sys/utsname.h>
 
@@ -100,16 +101,23 @@ int exec_checkra1n(void) {
 			return -1;
 		}
 	}
-#if defined(__APPLE__) && defined(__arm64__) && (TARGET_OS_IPHONE || defined(FORCE_HELPER))
+#if defined(__APPLE__)
+	char resolved_c1_path[PATH_MAX], *resolved;
+	resolved = realpath(checkra1n_path, resolved_c1_path);
+
+	if (!resolved) {
+		LOG(LOG_FATAL, "Cannot resolve checkra1n path %s: %d (%s)", checkra1n_path, errno, strerror(errno));
+		if (ext_checkra1n == NULL) {
+			unlink(checkra1n_path);
+			free(checkra1n_path);
+		}
+		checkra1n_path = NULL;
+		return -1;
+	}
+
 	char* libcheckra1nhelper_dylib_path = NULL;
-	{
-		struct utsname name;
-		uname(&name);
-		unsigned long darwinMajor = strtoul(name.release, NULL, 10);
-		assert(darwinMajor != 0);
-#if !defined(FORCE_HELPER)
-		if (darwinMajor < 20) {
-#endif
+	if (ext_checkra1n == NULL || gOverrideLibcheckra1nHelper) {
+		setenv("LIBCHECKRA1NHELPER_CHECKRA1N_PATH", resolved_c1_path, 1);
 		if (gOverrideLibcheckra1nHelper) {
 			libcheckra1nhelper_dylib_path = gOverrideLibcheckra1nHelper;
 			goto setenv_ra1n;
@@ -141,9 +149,6 @@ int exec_checkra1n(void) {
 			}
 setenv_ra1n:
 			setenv("DYLD_INSERT_LIBRARIES", libcheckra1nhelper_dylib_path, 1);
-#if !defined(FORCE_HELPER)
-		}
-#endif
 	}
 #endif
 	char args[0x10] = "-E";
@@ -181,6 +186,15 @@ setenv_ra1n:
 		return -1;
 	}
 	LOG(LOG_VERBOSE2, "%s spawned successfully", checkra1n_path);
+#if defined(__APPLE__)
+#if TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR
+    waitpid(pid, NULL, WUNTRACED);
+    ret = ptrace(PT_DETACH, pid, NULL, 0);
+
+	if (ret)
+		LOG(LOG_WARNING, "Cannot ptrace(PT_DETACH): %d (%s)", errno, strerror(errno));
+#endif
+#endif
 	sleep(2);
 	if (ext_checkra1n == NULL) {
 		unlink(checkra1n_path);
@@ -188,12 +202,12 @@ setenv_ra1n:
 		checkra1n_path = NULL;
 	}
 	waitpid(pid, NULL, 0);
-		if (!external_pongo && pongo_path != NULL) {
+	if (!external_pongo && pongo_path != NULL) {
 		unlink(pongo_path);
 	}
 	if (pongo_path != NULL) free(pongo_path);
 	pongo_path = NULL;
-#if defined(__APPLE__) && defined(__arm64__) && (TARGET_OS_IPHONE || defined(FORCE_HELPER))
+#if defined(__APPLE__)
 	if (libcheckra1nhelper_dylib_path != NULL) {
 		if (!gOverrideLibcheckra1nHelper) unlink(libcheckra1nhelper_dylib_path);
 		unsetenv("DYLD_INSERT_LIBRARIES");

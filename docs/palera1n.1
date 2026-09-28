@@ -18,6 +18,7 @@
 .Op Fl i Ar checkra1n file
 .Op Fl -version
 .Op Fl -force-revert
+.Op Fl -force-enable-ssv
 .Op Fl -override-libcheckra1nhelper Ar hook dylib
 .Sh DESCRIPTION
 .Nm
@@ -28,7 +29,7 @@ bootROM exploit.
 .Pp
 .Nm
 provides rootful and rootless jailbreak modes.
-On iOS/iPadOS 15.0 and later and on tvOS 18.2 or later,
+On iOS/iPadOS 15.0 and later,
 .Nm
 is able to jailbreak the device in fakefs-rootful mode, where /
 is writable, as well as rootless mode, where / cannot be written to.
@@ -134,6 +135,19 @@ files. As a result, using the loader app to install the jailbreak environment
 is not supported when this option is used together with
 .Fl f , -fakefs
 \[char46]
+.It Fl -force-enable-ssv
+Force the jailbreak to detect Signed System Volume (SSV) as being required on
+the system. This option provides compatibility with previous version of palera1n
+that incorrectly detect SSV as being required on tvOS 18.2 and above. When using
+this option with
+.Fl f , -fakefs ,
+the jailbreak will behave as if fakefs is required, which allows the user to boot
+into fakefs possibly created by previous versions of palera1n, or remove it if
+the
+.Fl -force-revert
+option is specified as well.
+(It is technically possible to setup fakefs using this option as well, but this
+is not a supported scenario)
 .It Fl B , -setup-fakefs-partial
 Like
 .Fl c , -setup-fakefs

@@ -37,6 +37,7 @@ static struct option longopts[] = {
 	{"rootless", no_argument, NULL, 'l'},
 	{"demote", no_argument, NULL, 'd'},
 	{"force-revert", no_argument, NULL, palerain_option_case_force_revert},
+	{"force-enable-ssv", no_argument, NULL, palerain_option_case_force_enable_ssv},
 	{"no-colors", no_argument, NULL, 'S'},
 	{"safe-mode", no_argument, NULL, 's'},
 	{"telnetd", no_argument, NULL, 'T'},
@@ -81,6 +82,7 @@ static int usage(int e, char* prog_name)
 			"iOS/iPadOS/tvOS 15-26, bridgeOS 5-10 arm64 jailbreaking tool\n\n"
 			"\t--version\t\t\t\tPrint version\n"
 			"\t--force-revert\t\t\t\tRemove jailbreak\n"
+			"\t--force-enable-ssv\t\t\tForce SSV detection to result in YES\n"
 #ifdef DEV_BUILD
 			"\t-1, --test1\t\t\t\tSet palerain_option_test1\n"
 			"\t-2, --test2\t\t\t\tSet palerain_option_test2\n"
@@ -337,6 +339,9 @@ int optparse(int argc, char* argv[]) {
 				return -1;
 			}
 			snprintf(gOverrideLibcheckra1nHelper, strlen(optarg) + 1, "%s", optarg);
+			break;
+		case palerain_option_case_force_enable_ssv:
+			palerain_flags |= palerain_option_ssv;
 			break;
 		default:
 			usage(1, argv[0]);

@@ -26,6 +26,8 @@
 #define palerain_option_case_force_revert palerain_option_case(1)
 #define palerain_option_case_libcheckra1nhelper_path palerain_option_case(2)
 #define palerain_option_case_cli		  palerain_option_case(3)
+#define palerain_option_case_force_enable_ssv		  palerain_option_case(4)
+
 
 
 #ifdef USE_LIBUSB
